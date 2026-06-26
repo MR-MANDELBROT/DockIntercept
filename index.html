@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DockIntercept: The Dock, supercharged.</title>
+  <meta name="description" content="Right-click any file, folder, or Stack item in your macOS Dock to get a powerful context menu. Open with, AirDrop, Copy Path, Move to Trash and more." />
+  <link rel="icon" href="icon.png" />
+  <link rel="canonical" href="https://mr-mandelbrot.github.io/DockIntercept/" />
+
+  <!-- Open Graph (link previews on social / chat) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="DockIntercept" />
+  <meta property="og:title" content="DockIntercept: The Dock, supercharged." />
+  <meta property="og:description" content="A real right-click menu for every file, folder, and Stack in your macOS Dock. Open with, AirDrop, Copy Path, Move to Trash — without ever opening Finder." />
+  <meta property="og:url" content="https://mr-mandelbrot.github.io/DockIntercept/" />
+  <meta property="og:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg" />
+
+  <!-- Twitter card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="DockIntercept: The Dock, supercharged." />
+  <meta name="twitter:description" content="A real right-click menu for every file, folder, and Stack in your macOS Dock — Open with, AirDrop, Copy Path, Move to Trash." />
+  <meta name="twitter:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg" />
+
+  <!-- Structured data: tells search engines this is a macOS app sold via Setapp -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "DockIntercept",
+    "operatingSystem": "macOS 12.0 or later",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "An extended right-click context menu for files, folders, and Stack popups in the macOS Dock: Open with, AirDrop, Show in Finder, Copy Path, Copy File, and Move to Trash.",
+    "url": "https://mr-mandelbrot.github.io/DockIntercept/",
+    "downloadUrl": "https://setapp.com",
+    "softwareVersion": "1.0.1",
+    "screenshot": "https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg",
+    "author": { "@type": "Person", "name": "Maximilian Marquart" },
+    "offers": {
+      "@type": "Offer",
+      "url": "https://setapp.com",
+      "availability": "https://schema.org/InStock",
+      "category": "subscription"
+    }
+  }
+  </script>
+  <style>
+    /* ============ Tokens ============ */
+    :root {
+      --accent:      #0071e3;
+      --accent-hover:#0077ed;
+      --ink:         #1d1d1f;
+      --ink-2:       #6e6e73;
+      --paper:       #fff;
+      --paper-ink:   #f5f5f7;
+      --paper-ink-2: #86868b;
+      --ease:        cubic-bezier(0.28, 0.11, 0.32, 1);
+      --nav-h:       48px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: var(--ink);
+      line-height: 1.47;
+      letter-spacing: -0.011em;
+    }
+
+    section { width: 100%; }
+    img, video { display: block; max-width: 100%; }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 max(22px, env(safe-area-inset-left));
+    }
+
+    .caps {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* ============ Reveal (IntersectionObserver) ============ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.9s ease var(--d, 0s), transform 0.9s var(--ease) var(--d, 0s);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* ============ Nav ============ */
+    nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      height: var(--nav-h);
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-brand img { width: 20px; height: 20px; border-radius: 5px; }
+    .nav-links { display: flex; gap: 30px; list-style: none; align-items: center; }
+    .nav-links a {
+      font-size: 12.5px;
+      color: rgba(0,0,0,0.78);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: #000; }
+    .nav-links a.nav-cta {
+      background: var(--accent);
+      color: #fff;
+      padding: 5px 13px;
+      border-radius: 980px;
+      font-weight: 500;
+    }
+    .nav-links a.nav-cta:hover { background: var(--accent-hover); color: #fff; }
+
+    /* ============ Buttons / Links ============ */
+    .pill {
+      display: inline-block;
+      padding: 13px 26px;
+      border-radius: 980px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 17px;
+      text-decoration: none;
+      transition: background .2s;
+    }
+    .pill:hover { background: var(--accent-hover); }
+    .link-arrow {
+      font-size: 17px;
+      color: var(--accent);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .link-arrow::after { content: "\00a0›"; }
+    .link-arrow:hover { text-decoration: underline; }
+
+    /* ============ Hero ============ */
+    .hero {
+      background: #fff;
+      padding: calc(var(--nav-h) + 96px) 0 110px;
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      gap: 64px;
+      align-items: center;
+    }
+    .hero h1 {
+      font-size: clamp(44px, 5.4vw, 76px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.03;
+      margin: 14px 0 0;
+    }
+    .hero p.sub {
+      font-size: clamp(17px, 1.7vw, 21px);
+      color: var(--ink-2);
+      max-width: 460px;
+      margin: 22px 0 0;
+      line-height: 1.5;
+    }
+    .hero-meta {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .hero-actions {
+      margin-top: 32px;
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .hero-shot {
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,0.09);
+      box-shadow:
+        0 8px 24px rgba(0,0,0,0.10),
+        0 40px 90px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+    .hero-shot img { width: 100%; height: auto; }
+
+    /* ============ Demo: scroll-linked video ============ */
+    .demo-scroll {
+      position: relative;
+      height: 480vh; /* ~4 viewport scrolls through the clip */
+      background: #000;
+      color: var(--paper-ink);
+    }
+    .demo-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: calc(var(--nav-h) + 18px) 22px 26px;
+    }
+    .demo-head {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .demo-head h2 {
+      font-size: clamp(24px, 2.6vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-top: 6px;
+      color: #f5f5f7;
+    }
+    .demo-frame {
+      position: relative;
+      max-height: 64vh;
+      max-height: 64svh;
+      aspect-ratio: 1692 / 1204;
+      max-width: min(960px, 100%);
+    }
+    .demo-frame video {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.6);
+      background: #000;
+    }
+    .demo-play {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 15px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 980px;
+      background: rgba(28,28,30,0.55);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      color: #f5f5f7;
+      font: 500 13px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .demo-play:hover { background: rgba(60,60,64,0.65); }
+    .demo-play svg { width: 11px; height: 11px; fill: currentColor; }
+    .demo-play .icon-pause, .demo-play.playing .icon-play { display: none; }
+    .demo-play.playing .icon-pause { display: block; }
+
+    .demo-captions {
+      position: relative;
+      height: 64px;
+      width: 100%;
+      max-width: 720px;
+      margin-top: 24px;
+    }
+    .demo-captions p {
+      position: absolute;
+      inset: 0;
+      text-align: center;
+      font-size: clamp(17px, 2vw, 22px);
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: #f5f5f7;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .demo-captions p strong { color: var(--accent); font-weight: inherit; }
+    .demo-captions p.on { opacity: 1; transform: none; }
+
+    .demo-progress {
+      width: min(280px, 60%);
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.18);
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .demo-progress i {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    /* ============ Bands ============ */
+    .band { padding: 130px 0; }
+    .band.dark { background: #000; color: var(--paper-ink); }
+    .band h2.big {
+      font-size: clamp(34px, 4.2vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.07;
+      max-width: 760px;
+      margin: 12px auto 0;
+      text-align: center;
+    }
+    .band .lead {
+      font-size: clamp(17px, 1.8vw, 21px);
+      color: var(--ink-2);
+      text-align: center;
+      max-width: 620px;
+      margin: 18px auto 0;
+      line-height: 1.5;
+    }
+    .band.dark .lead { color: var(--paper-ink-2); }
+    .band .band-head { text-align: center; }
+
+    /* ============ Feature grid ============ */
+    .grid {
+      margin-top: 72px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .card {
+      border-radius: 20px;
+      padding: 34px 30px;
+      background: #f5f5f7;
+    }
+    .card svg {
+      width: 34px;
+      height: 34px;
+      stroke: var(--accent);
+      stroke-width: 1.6;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      margin-bottom: 18px;
+    }
+    .card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      margin-bottom: 7px;
+    }
+    .card p {
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: var(--ink-2);
+    }
+
+    /* ============ Install steps ============ */
+    .steps {
+      margin: 72px auto 0;
+      max-width: 720px;
+    }
+    .step {
+      display: flex;
+      gap: 26px;
+      padding: 32px 0;
+      border-top: 1px solid rgba(255,255,255,0.14);
+      align-items: flex-start;
+    }
+    .step:last-child { border-bottom: 1px solid rgba(255,255,255,0.14); }
+    .step .n {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step h4 {
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      margin-bottom: 6px;
+      color: #f5f5f7;
+    }
+    .step p {
+      font-size: 16px;
+      color: var(--paper-ink-2);
+      line-height: 1.55;
+    }
+    code {
+      font-family: "SF Mono", ui-monospace, Menlo, monospace;
+      font-size: 0.86em;
+      background: rgba(255,255,255,0.1);
+      padding: 1px 7px;
+      border-radius: 5px;
+    }
+
+    /* ============ CTA ============ */
+    .cta {
+      background: #fff;
+      text-align: center;
+      padding: 150px 0;
+    }
+    .cta .app-icon {
+      width: 96px;
+      height: 96px;
+      border-radius: 22px;
+      margin: 0 auto 26px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+    }
+    .cta h2 {
+      font-size: clamp(36px, 4.6vw, 64px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+    }
+    .cta p { font-size: 19px; color: var(--ink-2); margin: 16px 0 34px; }
+
+    /* ============ Footer ============ */
+    footer {
+      background: #f5f5f7;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      padding: 30px 0;
+    }
+    .foot-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer p { font-size: 12px; color: var(--ink-2); }
+    .foot-links { display: flex; gap: 24px; }
+    .foot-links a {
+      font-size: 12px;
+      color: var(--ink-2);
+      text-decoration: none;
+    }
+    .foot-links a:hover { color: var(--ink); text-decoration: underline; }
+
+    /* ============ Responsive ============ */
+    @media (max-width: 1023px) {
+      .hero-grid { grid-template-columns: 1fr; gap: 56px; }
+      .hero { text-align: center; padding-bottom: 80px; }
+      .hero p.sub { margin-left: auto; margin-right: auto; }
+      .hero-actions { justify-content: center; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .band { padding: 90px 0; }
+      .grid { grid-template-columns: 1fr; margin-top: 52px; }
+      .nav-links { gap: 18px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+      .demo-scroll { height: 420vh; }
+      .demo-frame { max-width: 100%; }
+      .demo-captions { height: 76px; margin-top: 18px; }
+      .demo-play { top: 10px; right: 10px; padding: 7px 12px; }
+      .step { gap: 18px; padding: 26px 0; }
+      .foot-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-brand" href="#">
+        <img src="icon.png" alt="" /> DockIntercept
+      </a>
+      <ul class="nav-links">
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a class="nav-cta" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div>
+          <span class="caps reveal">Available on Setapp · macOS 12+</span>
+          <h1 class="reveal">The Dock,<br />supercharged.</h1>
+          <p class="sub reveal">
+            A real right-click menu for every file, folder, and Stack in your Dock.
+            Open with, AirDrop, copy, trash. Without ever opening Finder.
+          </p>
+          <div class="hero-actions reveal">
+            <a class="pill" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a>
+            <a class="link-arrow" href="#demo">Watch the demo</a>
+          </div>
+          <p class="hero-meta reveal">Available on Setapp. No ads, no tracking.</p>
+        </div>
+        <div class="hero-shot reveal">
+          <img src="assets/hero.jpg" alt="DockIntercept context menu open over a Dock item, showing Open with, AirDrop, Copy Path and Move to Trash" width="1600" height="1138" />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Demo: scroll-linked video -->
+  <section class="demo-scroll" id="demo">
+    <div class="demo-sticky">
+      <div class="demo-head">
+        <span class="caps">See it in action</span>
+        <h2>Scroll to play.</h2>
+      </div>
+
+      <div class="demo-frame">
+        <button class="demo-play" id="demo-play" aria-label="Play video normally">
+          <svg class="icon-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.2 1.1a.8.8 0 0 1 1.2-.7l7.4 4.9a.8.8 0 0 1 0 1.4L3.4 11.6a.8.8 0 0 1-1.2-.7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h2.2v10H2.5zM7.3 1h2.2v10H7.3z"/></svg>
+          <span id="demo-play-label">Play video</span>
+        </button>
+        <video id="demo-video" src="assets/demo.mp4" poster="assets/poster.jpg"
+               muted playsinline preload="auto"
+               aria-label="Screen recording of DockIntercept in use"></video>
+      </div>
+
+      <div class="demo-captions" id="demo-captions" aria-live="polite">
+        <p data-from="0"    data-to="0.20"><strong>Right-click</strong> any file in your Dock.</p>
+        <p data-from="0.20" data-to="0.46">Open it with <strong>any app</strong>. No Finder detour.</p>
+        <p data-from="0.46" data-to="0.60"><strong>AirDrop</strong> it to a nearby device.</p>
+        <p data-from="0.60" data-to="0.82">Works inside <strong>Stacks</strong>. Jump straight to Finder.</p>
+        <p data-from="0.82" data-to="1.01"><strong>Copy the path.</strong> Or trash it. Done.</p>
+      </div>
+
+      <div class="demo-progress" aria-hidden="true"><i id="demo-bar"></i></div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="band">
+    <div class="container">
+      <div class="band-head">
+        <span class="caps reveal">Features</span>
+        <h2 class="big reveal">Everything you wish the&nbsp;Dock&nbsp;could&nbsp;do.</h2>
+        <p class="lead reveal">One right-click. Every action you need. Right where your files already live.</p>
+      </div>
+
+      <div class="grid" id="feature-grid">
+        <div class="card reveal">
+          <svg viewBox="0 0 34 34"><rect x="4" y="7" width="26" height="20" rx="4"/><path d="M4 13h26M9 10h.01M13 10h.01"/></svg>
+          <h3>Open with any app</h3>
+          <p>Your preferred apps for each file type sit right at the top, followed by every system suggestion.</p>
+        </div>
+        <div class="card reveal">
+          <svg viewBox="0 0 34 34"><circle cx="17" cy="21" r="2.2"/><path d="M9.48 18.26A8 8 0 0 1 24.52 18.26M5.67 15.72A12.5 12.5 0 0 1 28.33 15.72"/></svg>
+          <h3>AirDrop instantly</h3>
+          <p>Send any Dock file straight to a nearby device. One click, no Finder window required.</p>
+        </div>
+        <div class="card reveal">
+          <svg viewBox="0 0 34 34"><path d="M14.17 18.42a7.083 7.083 0 0 0 10.68 0.765l4.25-4.25a7.083 7.083 0 0 0-10.016-10.016l-2.437 2.423"/><path d="M19.83 15.58a7.083 7.083 0 0 0-10.68-0.765l-4.25 4.25a7.083 7.083 0 0 0 10.016 10.016l2.423-2.423"/></svg>
+          <h3>Copy path or file</h3>
+          <p>Grab the full path as text or the file itself. Focus returns to your previous app, so paste just works.</p>
+        </div>
+        <div class="card reveal">
+          <svg viewBox="0 0 34 34"><path d="M5 12a3 3 0 0 1 3-3h6l3 3h9a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z"/></svg>
+          <h3>Works inside Stacks</h3>
+          <p>The menu appears in Dock Stack fan and grid views too, not just on pinned items.</p>
+        </div>
+        <div class="card reveal">
+          <svg viewBox="0 0 34 34"><path d="M8 10h18M13 10V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 10l1.5 16a2 2 0 0 0 2 1.8h7a2 2 0 0 0 2-1.8L24 10"/></svg>
+          <h3>Move to Trash</h3>
+          <p>Delete from the Dock without dragging. Lingering Stack copies are cleaned up automatically.</p>
+        </div>
+        <div class="card reveal">
+          <svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="5"/><path d="M17 5v4M17 25v4M5 17h4M25 17h4M8.5 8.5l2.9 2.9M22.6 22.6l2.9 2.9M25.5 8.5l-2.9 2.9M11.4 22.6l-2.9 2.9"/></svg>
+          <h3>Invisible by design</h3>
+          <p>No Dock icon of its own. Launches at login. Settings are a double-click away when you need them.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Install -->
+  <section id="install" class="band dark">
+    <div class="container">
+      <div class="band-head">
+        <span class="caps reveal">Get started</span>
+        <h2 class="big reveal">Installed in under a minute.</h2>
+      </div>
+
+      <div class="steps">
+        <div class="step reveal">
+          <div class="n">1</div>
+          <div>
+            <h4>Install from Setapp</h4>
+            <p>Open <strong>Setapp</strong>, search for <strong>DockIntercept</strong>, and click install. It lands in your <code>Applications</code> folder automatically.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="n">2</div>
+          <div>
+            <h4>Grant Accessibility access</h4>
+            <p>On first launch, macOS opens <strong>Privacy &amp; Security → Accessibility</strong>. Flip the switch. The app restarts itself automatically.</p>
+          </div>
+        </div>
+        <div class="step reveal">
+          <div class="n">3</div>
+          <div>
+            <h4>Right-click your Dock</h4>
+            <p>That's it. The extended menu appears on any file, folder, or Stack item in your Dock.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <img class="app-icon reveal" src="icon.png" alt="" />
+      <h2 class="reveal">Take control of your&nbsp;Dock.</h2>
+      <p class="reveal">Available on Setapp. macOS 12 or later.</p>
+      <a class="pill reveal" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="foot-inner">
+      <p>© 2026 Maximilian Marquart · All rights reserved.</p>
+      <div class="foot-links">
+        <a href="https://setapp.com" target="_blank" rel="noopener">Setapp</a>
+        <a href="mailto:max@marquart.dev">Support</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="https://marquart.dev" target="_blank" rel="noopener">Developer</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------- Staggered reveal ---------- */
+    var revealEls = document.querySelectorAll(".reveal");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add("in");
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+
+    revealEls.forEach(function (el) {
+      var parent = el.parentElement;
+      // Stagger siblings that reveal together (feature cards, hero column)
+      var siblings = Array.prototype.filter.call(parent.children, function (c) {
+        return c.classList.contains("reveal");
+      });
+      if (siblings.length > 1) {
+        el.style.setProperty("--d", (siblings.indexOf(el) * 0.09) + "s");
+      }
+      io.observe(el);
+    });
+
+    /* ---------- Scroll-linked video ---------- */
+    var section  = document.getElementById("demo");
+    var video    = document.getElementById("demo-video");
+    var playBtn  = document.getElementById("demo-play");
+    var playLbl  = document.getElementById("demo-play-label");
+    var bar      = document.getElementById("demo-bar");
+    var captions = Array.prototype.slice.call(
+      document.querySelectorAll("#demo-captions p")
+    );
+
+    var FALLBACK_DURATION = 43.16;
+    var targetTime = 0;
+    var playing = false;
+
+    function duration() {
+      return (isFinite(video.duration) && video.duration > 0)
+        ? video.duration : FALLBACK_DURATION;
+    }
+
+    function scrollProgress() {
+      var rect = section.getBoundingClientRect();
+      var total = section.offsetHeight - window.innerHeight;
+      if (total <= 0) return 0;
+      return Math.min(1, Math.max(0, -rect.top / total));
+    }
+
+    function updateOverlays(t) {
+      var p = t / duration();
+      bar.style.width = (p * 100).toFixed(2) + "%";
+      captions.forEach(function (c) {
+        var on = p >= parseFloat(c.dataset.from) && p < parseFloat(c.dataset.to);
+        c.classList.toggle("on", on);
+      });
+    }
+
+    function tick() {
+      if (!playing) {
+        targetTime = scrollProgress() * (duration() - 0.05);
+        if (video.readyState >= 2 && !video.seeking) {
+          var diff = targetTime - video.currentTime;
+          if (Math.abs(diff) > 0.04) {
+            // Big jumps snap, small ones glide (keeps scrubbing smooth)
+            video.currentTime = Math.abs(diff) > 3
+              ? targetTime
+              : video.currentTime + diff * 0.35;
+          }
+        }
+      }
+      updateOverlays(video.currentTime);
+      requestAnimationFrame(tick);
+    }
+
+    function setPlaying(on) {
+      playing = on;
+      playBtn.classList.toggle("playing", on);
+      playLbl.textContent = on ? "Pause" : "Play video";
+      playBtn.setAttribute("aria-label", on ? "Pause video" : "Play video normally");
+    }
+
+    playBtn.addEventListener("click", function () {
+      if (video.paused) {
+        if (video.currentTime > duration() - 0.5) video.currentTime = 0;
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+    video.addEventListener("play",  function () { setPlaying(true);  });
+    video.addEventListener("pause", function () { setPlaying(false); });
+    video.addEventListener("ended", function () { setPlaying(false); });
+
+    // Pause normal playback when the demo scrolls out of view
+    new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting && !video.paused) video.pause();
+    }, { threshold: 0 }).observe(section);
+
+    // iOS: prime the video pipeline on first touch so scrubbing works
+    var primed = false;
+    function prime() {
+      if (primed) return;
+      primed = true;
+      video.play().then(function () { video.pause(); }).catch(function () {});
+    }
+    window.addEventListener("touchstart", prime, { once: true, passive: true });
+
+    var started = false;
+    function start() {
+      if (started) return;
+      started = true;
+      requestAnimationFrame(tick);
+    }
+    if (video.readyState >= 1) start();
+    else video.addEventListener("loadedmetadata", start, { once: true });
+    // Start the loop regardless, in case metadata events were missed
+    setTimeout(start, 1500);
+  })();
+  </script>
+
+</body>
+</html>

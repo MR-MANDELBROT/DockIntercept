@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mr-mandelbrot.github.io/DockIntercept/sitemap.xml
