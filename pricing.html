@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pricing — DockIntercept</title>
+  <meta name="description" content="DockIntercept pricing: a one-time Lifetime license for $12.99, including all future updates. Sold via Setapp." />
+  <link rel="icon" href="icon.png" />
+  <link rel="canonical" href="https://mr-mandelbrot.github.io/DockIntercept/pricing.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="DockIntercept" />
+  <meta property="og:title" content="DockIntercept — Pricing" />
+  <meta property="og:description" content="One-time Lifetime license for $12.99, all future updates included. Available on Setapp." />
+  <meta property="og:url" content="https://mr-mandelbrot.github.io/DockIntercept/pricing.html" />
+  <meta property="og:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg" />
+
+  <style>
+    :root {
+      --accent:      #0071e3;
+      --accent-hover:#0077ed;
+      --ink:         #1d1d1f;
+      --ink-2:       #6e6e73;
+      --nav-h:       48px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: var(--ink);
+      line-height: 1.47;
+      letter-spacing: -0.011em;
+    }
+    a { color: var(--accent); text-decoration: none; }
+
+    /* Nav */
+    nav {
+      position: fixed; inset: 0 0 auto 0; z-index: 100; height: var(--nav-h);
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; height: 100%; padding: 0 22px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink);
+    }
+    .nav-brand img { width: 20px; height: 20px; border-radius: 5px; }
+    .nav-links { display: flex; gap: 30px; list-style: none; align-items: center; }
+    .nav-links a { font-size: 12.5px; color: rgba(0,0,0,0.78); transition: color .2s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a.nav-cta {
+      background: var(--accent); color: #fff; padding: 5px 13px;
+      border-radius: 980px; font-weight: 500;
+    }
+    .nav-links a.nav-cta:hover { background: var(--accent-hover); }
+
+    /* Layout */
+    .wrap { max-width: 720px; margin: 0 auto; padding: calc(var(--nav-h) + 80px) 22px 96px; text-align: center; }
+    .caps {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+    }
+    h1 {
+      font-size: clamp(36px, 5vw, 56px); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.05; margin: 12px 0 0;
+    }
+    .sub { font-size: clamp(17px, 1.8vw, 20px); color: var(--ink-2); margin: 18px auto 0; max-width: 480px; line-height: 1.5; }
+
+    /* Pricing card */
+    .plan {
+      margin: 56px auto 0; max-width: 420px;
+      border: 1px solid rgba(0,0,0,0.10); border-radius: 22px;
+      padding: 40px 34px 34px; text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+    }
+    .plan-icon { width: 72px; height: 72px; border-radius: 17px; margin: 0 auto 18px; box-shadow: 0 8px 22px rgba(0,0,0,0.14); }
+    .plan-name { font-size: 14px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+    .price { margin: 10px 0 2px; }
+    .price .amount { font-size: 60px; font-weight: 800; letter-spacing: -0.03em; }
+    .price .cur { font-size: 30px; font-weight: 700; vertical-align: 14px; margin-right: 2px; }
+    .price-note { font-size: 15px; color: var(--ink-2); }
+    .features { list-style: none; text-align: left; margin: 28px 0 32px; display: grid; gap: 13px; }
+    .features li { display: flex; align-items: flex-start; gap: 11px; font-size: 15px; color: var(--ink); }
+    .features svg { flex-shrink: 0; width: 20px; height: 20px; margin-top: 1px; stroke: var(--accent); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .pill {
+      display: inline-block; width: 100%; padding: 14px 26px; border-radius: 980px;
+      background: var(--accent); color: #fff; font-size: 17px; font-weight: 500;
+      transition: background .2s;
+    }
+    .pill:hover { background: var(--accent-hover); }
+    .billed { margin-top: 16px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+
+    .foot-note { margin-top: 44px; font-size: 13px; color: var(--ink-2); }
+    .foot-note a { color: var(--ink-2); text-decoration: underline; }
+
+    @media (max-width: 768px) { .nav-links a:not(.nav-cta) { display: none; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-brand" href="./"><img src="icon.png" alt="" /> DockIntercept</a>
+      <ul class="nav-links">
+        <li><a href="./#demo">Demo</a></li>
+        <li><a href="./#features">Features</a></li>
+        <li><a href="./#install">Install</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a class="nav-cta" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <span class="caps">Pricing</span>
+    <h1>One price. Yours&nbsp;forever.</h1>
+    <p class="sub">No subscription, no tiers. Buy DockIntercept once and keep it — every future update included.</p>
+
+    <div class="plan">
+      <img class="plan-icon" src="icon.png" alt="" />
+      <div class="plan-name">Lifetime license</div>
+      <div class="price"><span class="cur">$</span><span class="amount">12.99</span></div>
+      <div class="price-note">one-time payment</div>
+
+      <ul class="features">
+        <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Full right-click menu on every Dock file, folder &amp; Stack</li>
+        <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Open with any app, AirDrop, Copy Path &amp; File, Move to Trash</li>
+        <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Works inside Stack fan &amp; grid views</li>
+        <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> All future updates, no extra cost</li>
+        <li><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> macOS 12 or later · no account, no tracking</li>
+      </ul>
+
+      <a class="pill" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a>
+      <p class="billed">Sold, billed and licensed securely through Setapp. Taxes and support handled by Setapp.</p>
+    </div>
+
+    <p class="foot-note">Questions about pricing? <a href="mailto:max@marquart.dev">max@marquart.dev</a> · <a href="./">Back to DockIntercept</a></p>
+  </main>
+</body>
+</html>
