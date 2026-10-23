@@ -32,8 +32,8 @@
     "applicationCategory": "UtilitiesApplication",
     "description": "An extended right-click context menu for files, folders, and Stack popups in the macOS Dock: Open with, AirDrop, Show in Finder, Copy Path, Copy File, and Move to Trash.",
     "url": "https://mr-mandelbrot.github.io/DockIntercept/",
-    "downloadUrl": "https://setapp.com",
-    "softwareVersion": "1.0.1",
+    "downloadUrl": "https://setapp.com/apps/dockintercept",
+    "softwareVersion": "1.1.1",
     "screenshot": "https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg",
     "author": { "@type": "Person", "name": "Maximilian Marquart" },
     "offers": {
@@ -41,7 +41,7 @@
       "name": "Lifetime",
       "price": "6.99",
       "priceCurrency": "USD",
-      "url": "https://setapp.com",
+      "url": "https://setapp.com/apps/dockintercept",
       "availability": "https://schema.org/InStock"
     }
   }
@@ -253,19 +253,34 @@
     }
     .demo-frame {
       position: relative;
+      /* explicit width, so the box does not wait for the poster to get its size */
+      width: min(960px, 100%, 64vh * 1692 / 1204);
+      width: min(960px, 100%, 64svh * 1692 / 1204);
       max-height: 64vh;
       max-height: 64svh;
       aspect-ratio: 1692 / 1204;
       max-width: min(960px, 100%);
     }
-    .demo-frame video {
+    .demo-frame video,
+    .demo-frame canvas {
       width: 100%;
       height: 100%;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,0.12);
-      box-shadow: 0 30px 90px rgba(0,0,0,0.6);
       background: #000;
     }
+    .demo-frame video { box-shadow: 0 30px 90px rgba(0,0,0,0.6); }
+    /* Phones: frame sequence drawn over the poster once enough frames are loaded */
+    .demo-frame canvas {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .demo-frame canvas.ready { opacity: 1; }
+    .demo-frame.is-video canvas { visibility: hidden; }
     .demo-play {
       position: absolute;
       top: 14px;
@@ -308,7 +323,7 @@
       color: #f5f5f7;
       opacity: 0;
       transform: translateY(8px);
-      transition: opacity .35s ease, transform .35s ease;
+      transition: opacity .2s ease, transform .2s ease;
     }
     .demo-captions p strong { color: var(--accent); font-weight: inherit; }
     .demo-captions p.on { opacity: 1; transform: none; }
@@ -324,10 +339,21 @@
     .demo-progress i {
       display: block;
       height: 100%;
-      width: 0;
       border-radius: 2px;
       background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: 0 50%;
     }
+
+    /* prefers-reduced-motion: no scroll scrubbing, a normal video with the play button */
+    .demo-scroll.is-static { height: auto; }
+    .demo-scroll.is-static .demo-sticky {
+      position: static;
+      height: auto;
+      padding-top: calc(var(--nav-h) + 72px);
+      padding-bottom: 96px;
+    }
+    .demo-scroll.is-static .demo-captions p { transform: none; transition: none; }
 
     /* ============ Bands ============ */
     .band { padding: 130px 0; }
@@ -513,7 +539,7 @@
         <li><a href="#features">Features</a></li>
         <li><a href="#install">Install</a></li>
         <li><a href="pricing.html">Pricing</a></li>
-        <li><a class="nav-cta" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a></li>
+        <li><a class="nav-cta" href="https://setapp.com/apps/dockintercept?utm_source=dockclick-site&amp;utm_medium=nav" target="_blank" rel="noopener">Get it on Setapp</a></li>
       </ul>
     </div>
   </nav>
@@ -530,10 +556,10 @@
             Open with, AirDrop, copy, trash. Without ever opening Finder.
           </p>
           <div class="hero-actions reveal">
-            <a class="pill" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a>
+            <a class="pill" href="https://setapp.com/apps/dockintercept?utm_source=dockclick-site&amp;utm_medium=hero" target="_blank" rel="noopener">Get it on Setapp</a>
             <a class="link-arrow" href="#demo">Watch the demo</a>
           </div>
-          <p class="hero-meta reveal">Available on Setapp. No ads, no tracking.</p>
+          <p class="hero-meta reveal">Sold on Setapp as a one-time purchase. No ads.</p>
         </div>
         <div class="hero-shot reveal">
           <img src="assets/hero.jpg" alt="DockClick context menu open over a Dock item, showing Open with, AirDrop, Copy Path and Move to Trash" width="1600" height="1138" />
@@ -547,18 +573,21 @@
     <div class="demo-sticky">
       <div class="demo-head">
         <span class="caps">See it in action</span>
-        <h2>Scroll to play.</h2>
+        <h2 id="demo-title" data-static-text="Press play to watch.">Scroll to play.</h2>
       </div>
 
-      <div class="demo-frame">
+      <!-- Assets: tools/make-demo-assets.sh <recording> -->
+      <div class="demo-frame" id="demo-frame">
         <button class="demo-play" id="demo-play" aria-label="Play video normally">
           <svg class="icon-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.2 1.1a.8.8 0 0 1 1.2-.7l7.4 4.9a.8.8 0 0 1 0 1.4L3.4 11.6a.8.8 0 0 1-1.2-.7z"/></svg>
           <svg class="icon-pause" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h2.2v10H2.5zM7.3 1h2.2v10H7.3z"/></svg>
           <span id="demo-play-label">Play video</span>
         </button>
-        <video id="demo-video" src="assets/demo.mp4" poster="assets/poster.jpg"
-               muted playsinline preload="auto"
+        <video id="demo-video" poster="assets/poster.jpg"
+               data-src="assets/demo.mp4" data-src-phone="assets/demo-mobile.mp4"
+               muted playsinline preload="none"
                aria-label="Screen recording of DockClick in use"></video>
+        <canvas id="demo-canvas" data-manifest="assets/demo-frames/manifest.json" aria-hidden="true"></canvas>
       </div>
 
       <div class="demo-captions" id="demo-captions" aria-live="polite">
@@ -606,12 +635,12 @@
         <div class="card reveal">
           <svg viewBox="0 0 34 34"><path d="M8 10h18M13 10V8a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 10l1.5 16a2 2 0 0 0 2 1.8h7a2 2 0 0 0 2-1.8L24 10"/></svg>
           <h3>Move to Trash</h3>
-          <p>Delete from the Dock without dragging. Lingering Stack copies are cleaned up automatically.</p>
+          <p>Delete from the Dock without dragging it to the Trash.</p>
         </div>
         <div class="card reveal">
           <svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="5"/><path d="M17 5v4M17 25v4M5 17h4M25 17h4M8.5 8.5l2.9 2.9M22.6 22.6l2.9 2.9M25.5 8.5l-2.9 2.9M11.4 22.6l-2.9 2.9"/></svg>
           <h3>Invisible by design</h3>
-          <p>No Dock icon of its own. Launches at login. Settings are a double-click away when you need them.</p>
+          <p>No Dock icon of its own. Starts at login if you want it to. Settings are a double-click away when you need them.</p>
         </div>
       </div>
     </div>
@@ -622,22 +651,22 @@
     <div class="container">
       <div class="band-head">
         <span class="caps reveal">Get started</span>
-        <h2 class="big reveal">Installed in under a minute.</h2>
+        <h2 class="big reveal">Set up in a few minutes.</h2>
       </div>
 
       <div class="steps">
         <div class="step reveal">
           <div class="n">1</div>
           <div>
-            <h4>Install from Setapp</h4>
-            <p>Open <strong>Setapp</strong>, search for <strong>DockClick</strong>, and click install. It lands in your <code>Applications</code> folder automatically.</p>
+            <h4>Buy it on Setapp</h4>
+            <p>Buy <strong>DockClick</strong> on Setapp, then install it from the <strong>Setapp</strong> app.</p>
           </div>
         </div>
         <div class="step reveal">
           <div class="n">2</div>
           <div>
-            <h4>Grant Accessibility access</h4>
-            <p>On first launch, macOS opens <strong>Privacy &amp; Security → Accessibility</strong>. Flip the switch. The app restarts itself automatically.</p>
+            <h4>Allow the permission</h4>
+            <p>On first launch, accept the license, then switch DockClick on under <strong>Privacy &amp; Security › Accessibility</strong>. On macOS 27 this section is called <strong>Device Control and Data Access</strong>. DockClick restarts itself automatically.</p>
           </div>
         </div>
         <div class="step reveal">
@@ -657,7 +686,7 @@
       <img class="app-icon reveal" src="icon.png" alt="" />
       <h2 class="reveal">Take control of your&nbsp;Dock.</h2>
       <p class="reveal">Available on Setapp. macOS 12 or later.</p>
-      <a class="pill reveal" href="https://setapp.com" target="_blank" rel="noopener">Get it on Setapp</a>
+      <a class="pill reveal" href="https://setapp.com/apps/dockintercept?utm_source=dockclick-site&amp;utm_medium=cta" target="_blank" rel="noopener">Get it on Setapp</a>
     </div>
   </section>
 
@@ -666,7 +695,7 @@
     <div class="foot-inner">
       <p>© 2026 Maximilian Marquart · All rights reserved.</p>
       <div class="foot-links">
-        <a href="https://setapp.com" target="_blank" rel="noopener">Setapp</a>
+        <a href="https://setapp.com/apps/dockintercept?utm_source=dockclick-site&amp;utm_medium=footer" target="_blank" rel="noopener">Setapp</a>
         <a href="pricing.html">Pricing</a>
         <a href="mailto:max@marquart.dev">Support</a>
         <a href="privacy.html">Privacy</a>
@@ -703,58 +732,205 @@
       io.observe(el);
     });
 
-    /* ---------- Scroll-linked video ---------- */
+    /* ---------- Scroll-linked demo ---------- */
+    // The scroll position alone picks the picture, the caption and the progress
+    // bar, all in the same animation frame. Phone-sized stages draw a frame
+    // sequence on a canvas, so no media seek is involved. Larger stages seek a
+    // fully loaded video and always go straight to the latest scroll target.
+    // Assets: tools/make-demo-assets.sh <recording>
     var section  = document.getElementById("demo");
+    var stage    = section.querySelector(".demo-sticky");
+    var frameBox = document.getElementById("demo-frame");
     var video    = document.getElementById("demo-video");
+    var canvas   = document.getElementById("demo-canvas");
+    var title    = document.getElementById("demo-title");
     var playBtn  = document.getElementById("demo-play");
     var playLbl  = document.getElementById("demo-play-label");
     var bar      = document.getElementById("demo-bar");
-    var captions = Array.prototype.slice.call(
-      document.querySelectorAll("#demo-captions p")
+    var captions = Array.prototype.map.call(
+      document.querySelectorAll("#demo-captions p"),
+      function (el) {
+        return { el: el, from: parseFloat(el.dataset.from), to: parseFloat(el.dataset.to), on: false };
+      }
     );
 
-    var FALLBACK_DURATION = 43.16;
-    var targetTime = 0;
-    var playing = false;
+    var VIDEO_FPS = 30;   // both videos are encoded at 30 fps
+    // Phone-sized viewport (portrait or landscape): phone assets
+    var phone = window.matchMedia("(max-width: 600px), (max-height: 500px)").matches;
+    var mode = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "static"
+             : phone && canvas.getContext ? "frames" : "video";
 
-    function duration() {
-      return (isFinite(video.duration) && video.duration > 0)
-        ? video.duration : FALLBACK_DURATION;
+    var span = 1;         // scroll distance while the stage is pinned
+    var shown = -1;       // progress shown by caption and bar
+    var playing = false;  // normal playback started with the button
+    var heldAt = -1;      // progress where playback paused; the picture holds until the user scrolls
+    var near = false;     // section close to the viewport: the loop runs
+    var looping = false;
+    var started = false;  // assets requested
+
+    // Pinned distance from layout boxes, not from innerHeight: on iOS innerHeight
+    // changes while the URL bar collapses, the 100svh stage and the section do not.
+    function measure() {
+      span = Math.max(1, section.offsetHeight - stage.offsetHeight);
     }
 
     function scrollProgress() {
-      var rect = section.getBoundingClientRect();
-      var total = section.offsetHeight - window.innerHeight;
-      if (total <= 0) return 0;
-      return Math.min(1, Math.max(0, -rect.top / total));
+      var p = -section.getBoundingClientRect().top / span;
+      return p < 0 ? 0 : p > 1 ? 1 : p;
     }
 
-    function updateOverlays(t) {
-      var p = t / duration();
-      bar.style.width = (p * 100).toFixed(2) + "%";
+    function duration() {
+      return isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
+    }
+
+    function showProgress(p) {
+      if (p === shown) return;
+      shown = p;
+      bar.style.transform = "scaleX(" + p.toFixed(4) + ")";
       captions.forEach(function (c) {
-        var on = p >= parseFloat(c.dataset.from) && p < parseFloat(c.dataset.to);
-        c.classList.toggle("on", on);
+        var on = p >= c.from && p < c.to;
+        if (on !== c.on) { c.on = on; c.el.classList.toggle("on", on); }
       });
     }
 
-    function tick() {
-      if (!playing) {
-        targetTime = scrollProgress() * (duration() - 0.05);
-        if (video.readyState >= 2 && !video.seeking) {
-          var diff = targetTime - video.currentTime;
-          if (Math.abs(diff) > 0.04) {
-            // Big jumps snap, small ones glide (keeps scrubbing smooth)
-            video.currentTime = Math.abs(diff) > 3
-              ? targetTime
-              : video.currentTime + diff * 0.35;
-          }
-        }
-      }
-      updateOverlays(video.currentTime);
-      requestAnimationFrame(tick);
+    /* Frame sequence (phones) */
+    var seq = null;
+
+    function loadFrames() {
+      var url = canvas.dataset.manifest;
+      fetch(url)
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (m) { initFrames(m, url.replace(/[^\/]*$/, "")); })
+        .catch(useVideoFallback);
     }
 
+    function useVideoFallback() {
+      if (mode !== "frames") return;
+      mode = "video";
+      canvas.classList.remove("ready");
+      loadVideo(video.dataset.srcPhone);
+    }
+
+    function initFrames(m, dir) {
+      var order = [], queued = [], firstPass = 0, next = 0, busy = 0;
+      seq = { m: m, img: [], ok: [], loaded: 0, failed: 0, drawn: -1, ready: false, ctx: canvas.getContext("2d") };
+      canvas.width = m.width;
+      canvas.height = m.height;
+      frameBox.style.aspectRatio = m.width + " / " + m.height;
+      // Coarse to fine: every 32nd slot first, then every 16th and so on, so the
+      // whole clip can be scrubbed early and sharpens while the rest arrives.
+      for (var step = 32; step >= 1; step /= 2) {
+        for (var s = 0; s < m.slots; s += step) {
+          var k = frameAt(s);
+          if (!queued[k]) { queued[k] = true; order.push(k); }
+        }
+        if (step === 32) firstPass = order.length;
+      }
+      function pump() {
+        while (busy < 6 && next < order.length) load(order[next++]);
+      }
+      function load(k) {
+        var img = new Image();
+        busy++;
+        img.onload = img.onerror = function (e) {
+          busy--;
+          if (mode !== "frames") return;   // gave up on frames, the video took over
+          if (e.type === "load") { seq.ok[k] = true; seq.loaded++; } else { seq.failed++; }
+          if (!seq.ready && seq.loaded && seq.loaded + seq.failed >= firstPass) {
+            seq.ready = true;               // the next frame draws, then the canvas fades in
+            canvas.classList.add("ready");
+          }
+          if (!seq.loaded && seq.failed >= firstPass) { useVideoFallback(); return; }
+          pump();
+        };
+        img.src = dir + ("0000" + m.keep[k]).slice(-5) + ".jpg?v=" + m.v;
+        seq.img[k] = img;
+      }
+      pump();
+    }
+
+    // Image shown at a 15 fps slot: the last kept frame at or before it
+    // (repeated frames are not stored).
+    function frameAt(slot) {
+      var keep = seq.m.keep, lo = 0, hi = keep.length - 1;
+      while (lo < hi) {
+        var mid = (lo + hi + 1) >> 1;
+        if (keep[mid] <= slot) lo = mid; else hi = mid - 1;
+      }
+      return lo;
+    }
+
+    function drawFrames(p) {
+      if (!seq || !seq.ready) return;
+      var n = seq.m.keep.length, want = frameAt(Math.round(p * (seq.m.slots - 1))), k = want;
+      // Not loaded yet: nearest loaded neighbour, the earlier one first
+      for (var d = 1; !seq.ok[k] && d < n; d++) {
+        if (want - d >= 0 && seq.ok[want - d]) k = want - d;
+        else if (want + d < n && seq.ok[want + d]) k = want + d;
+      }
+      if (k !== seq.drawn && seq.ok[k]) {
+        seq.ctx.drawImage(seq.img[k], 0, 0, canvas.width, canvas.height);
+        seq.drawn = k;
+      }
+    }
+
+    /* Video (larger stages, fallback) */
+    var targetFrame = -1;
+
+    function loadVideo(src) {
+      video.preload = "auto";
+      // Fetch the whole file once, so every seek is served from memory however
+      // little the browser would preload by itself (iOS and iPadOS: metadata only).
+      fetch(src)
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.blob(); })
+        .then(function (b) { if (!video.getAttribute("src")) video.src = URL.createObjectURL(b); })
+        .catch(function () { if (!video.getAttribute("src")) video.src = src; });
+    }
+
+    function frameOf(t) { return Math.floor(t * VIDEO_FPS + 0.001); }
+
+    function seekTo(f) {
+      if (frameOf(video.currentTime) !== f) video.currentTime = (f + 0.5) / VIDEO_FPS;
+    }
+
+    function seekVideo(p) {
+      var d = duration();
+      if (!d || video.readyState < 1) return;   // metadata is enough to seek
+      targetFrame = Math.round(p * (Math.max(1, Math.floor(d * VIDEO_FPS)) - 1));
+      if (!video.seeking) seekTo(targetFrame);
+    }
+
+    // One seek at a time; when it lands, go straight to where the scroll is now.
+    video.addEventListener("seeked", function () {
+      if (mode === "video" && !playing && heldAt < 0 && targetFrame >= 0) seekTo(targetFrame);
+    });
+
+    video.addEventListener("loadedmetadata", function () {
+      if (mode === "video" && video.videoWidth) {
+        frameBox.style.aspectRatio = video.videoWidth + " / " + video.videoHeight;
+      }
+    });
+
+    /* Loop */
+    function tick() {
+      if (!near) { looping = false; return; }
+      requestAnimationFrame(tick);
+      var p = scrollProgress();
+      if (heldAt >= 0 && Math.abs(p - heldAt) > 0.002) {
+        heldAt = -1;                            // the user scrolled: back to scrubbing
+        frameBox.classList.remove("is-video");
+      }
+      if (mode === "static" || playing || heldAt >= 0) {
+        var d = duration();
+        showProgress(d ? Math.min(1, video.currentTime / d) : 0);
+        return;
+      }
+      showProgress(p);
+      if (mode === "frames") drawFrames(p);
+      else seekVideo(p);
+    }
+
+    /* Normal playback */
     function setPlaying(on) {
       playing = on;
       playBtn.classList.toggle("playing", on);
@@ -763,41 +939,56 @@
     }
 
     playBtn.addEventListener("click", function () {
-      if (video.paused) {
-        if (video.currentTime > duration() - 0.5) video.currentTime = 0;
-        video.play();
-      } else {
-        video.pause();
+      if (!video.paused) { video.pause(); return; }
+      if (!video.getAttribute("src")) {
+        video.src = mode === "frames" || (mode === "static" && phone)
+          ? video.dataset.srcPhone : video.dataset.src;
       }
+      // A paused clip resumes where it stopped, otherwise playback starts at the scroll position
+      var d = duration() || (seq ? seq.m.duration : 0);
+      if (mode === "frames" && heldAt < 0) video.currentTime = scrollProgress() * d;
+      if (d && video.currentTime > d - 0.5) video.currentTime = 0;
+      heldAt = -1;
+      var attempt = video.play();
+      if (attempt && attempt.catch) attempt.catch(function () {});
     });
-    video.addEventListener("play",  function () { setPlaying(true);  });
-    video.addEventListener("pause", function () { setPlaying(false); });
-    video.addEventListener("ended", function () { setPlaying(false); });
+    video.addEventListener("play", function () { setPlaying(true); });
+    video.addEventListener("playing", function () { frameBox.classList.add("is-video"); });
+    ["pause", "ended"].forEach(function (type) {
+      video.addEventListener(type, function () {
+        setPlaying(false);
+        if (mode !== "static") heldAt = scrollProgress();
+      });
+    });
 
     // Pause normal playback when the demo scrolls out of view
     new IntersectionObserver(function (entries) {
-      if (!entries[0].isIntersecting && !video.paused) video.pause();
+      if (!entries[entries.length - 1].isIntersecting && !video.paused) video.pause();
     }, { threshold: 0 }).observe(section);
 
-    // iOS: prime the video pipeline on first touch so scrubbing works
-    var primed = false;
-    function prime() {
-      if (primed) return;
-      primed = true;
-      video.play().then(function () { video.pause(); }).catch(function () {});
-    }
-    window.addEventListener("touchstart", prime, { once: true, passive: true });
-
-    var started = false;
-    function start() {
+    /* Start: assets load once the page has loaded and the section is about a screen away */
+    function loadAssets() {
       if (started) return;
       started = true;
-      requestAnimationFrame(tick);
+      if (mode === "frames") loadFrames();
+      else if (mode === "video") loadVideo(video.dataset.src);
+      else video.src = phone ? video.dataset.srcPhone : video.dataset.src;   // preload="none"
     }
-    if (video.readyState >= 1) start();
-    else video.addEventListener("loadedmetadata", start, { once: true });
-    // Start the loop regardless, in case metadata events were missed
-    setTimeout(start, 1500);
+
+    if (mode === "static") {
+      section.classList.add("is-static");
+      title.textContent = title.dataset.staticText;
+    }
+    measure();
+    window.addEventListener("resize", measure);
+
+    new IntersectionObserver(function (entries) {
+      near = entries[entries.length - 1].isIntersecting;
+      if (!near) return;
+      if (document.readyState === "complete") loadAssets();
+      else window.addEventListener("load", loadAssets);
+      if (!looping) { looping = true; requestAnimationFrame(tick); }
+    }, { rootMargin: "100% 0px" }).observe(section);
   })();
   </script>
 
