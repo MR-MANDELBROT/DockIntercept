@@ -27,6 +27,7 @@
     .lead { font-size:18px; color:var(--ink-2); }
     ul { margin:0 0 14px 22px; }
     li { margin-bottom:6px; }
+    code { font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:0.9em; }
     footer { color:var(--ink-2); font-size:13px; margin-top:48px; border-top:1px solid rgba(0,0,0,0.08); padding-top:22px; }
   </style>
 </head>
@@ -34,11 +35,13 @@
   <div class="wrap">
     <a class="back" href="./">Back to DockClick</a>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: 19 August 2026</p>
+    <p class="updated">Last updated: 22 October 2026</p>
 
-    <p class="lead">Short version: DockClick runs entirely on your Mac. It has no analytics, no
-       accounts, and never transmits your data. This policy explains in detail what is (and is not)
-       processed, on which legal basis, and what your rights are.</p>
+    <p class="lead">Short version: DockClick is sold through Setapp and contains the Setapp framework,
+       which checks your license and reports usage to Setapp. Apart from that, DockClick has no
+       analytics, no advertising and no accounts, and it does not send the developer your name, email
+       address, payment details or file names. This policy explains in detail what is processed, on
+       which legal basis, and what your rights are.</p>
 
     <h2>1. Data controller</h2>
     <p>The controller responsible for the app DockClick and this website within the meaning of
@@ -50,34 +53,45 @@
     <h2>2. Scope</h2>
     <p>This policy covers the DockClick macOS application and this website
        (mr-mandelbrot.github.io/DockIntercept). Purchasing is handled by Setapp, which acts as an
-       independent data controller under its own privacy policy (see section 5).</p>
+       independent data controller under its own privacy policy (see section 5). The Setapp
+       framework inside the app is described in section 6.</p>
 
     <h2>3. Data processed by the app</h2>
-    <p><strong>DockClick does not collect, store, or transmit any personal data.</strong> The app
-       contains no analytics, no telemetry, no advertising, no crash reporting of its own, and no
-       user accounts. It makes no network connections in normal operation.</p>
+    <p><strong>The developer’s own code in DockClick contains no analytics, telemetry, advertising,
+       crash reporting or user accounts, and it sends no data to the developer.</strong> The app also
+       contains the Setapp framework, which connects to Setapp; see section 6.</p>
     <p>To provide its functionality, the app processes the following information <strong>locally on
-       your device only</strong>:</p>
+       your device</strong>:</p>
     <ul>
       <li><strong>Dock and file information</strong> — via the macOS Accessibility permission, the app
           reads which Dock item you right-clicked and the names and paths of files shown in Dock
           Stacks, solely to display its context menu and execute the action you choose (e.g. Open
-          with, Show in Finder, Move to Trash). This information never leaves your Mac and is not
-          persisted by the app.</li>
+          with, Show in Finder, Move to Trash). DockClick does not send this information anywhere and
+          does not store it, except in the diagnostic log when Debug logs are switched on.</li>
       <li><strong>Settings</strong> — your preferences (e.g. menu enabled, launch at login, Stack
           search paths) are stored locally in the app’s preferences on your Mac. You can delete them
           at any time by removing the app and its preference file.</li>
+      <li><strong>Diagnostic log</strong> — DockClick writes a log to
+          <code>~/Library/Logs/DockClick/</code> on your Mac, at most about 4&nbsp;MB plus one older
+          copy. It records technical events such as a menu opening or closing. It contains file names
+          and paths only if you switch on Debug logs in Settings. The log is never uploaded; you can
+          choose to send it to the developer when asking for support.</li>
     </ul>
-    <p>Because this processing happens exclusively on your device and no data is ever disclosed to
-       the developer or any third party, the developer has no access to it. To the extent a legal
-       basis is required, it is the performance of the license agreement with you
-       (Art. 6(1)(b) GDPR).</p>
+    <p>Because this processing happens on your device and is not disclosed to the developer, the
+       developer has no access to it. To the extent a legal basis is required, it is the performance
+       of the license agreement with you (Art. 6(1)(b) GDPR).</p>
 
     <h2>4. Permissions</h2>
     <ul>
-      <li><strong>Accessibility</strong> — required for the app’s core function: detecting
-          right-clicks on Dock items and reading the clicked item’s name and path. Used only locally.
-          You grant this permission in System Settings and can revoke it there at any time.</li>
+      <li><strong>Accessibility</strong> (on macOS 27 and later: Device Control and Data Access) —
+          required for the app’s core function: detecting right-clicks on Dock items, reading the
+          clicked item’s name and path, handling clicks while a DockClick menu is open, and closing
+          the Stack after an action. Used only locally. You grant this permission in System Settings
+          and can revoke it there at any time.</li>
+      <li><strong>Files and Folders</strong> — macOS may ask once for access to folders such as
+          Downloads, Desktop or Documents the first time you right-click a file there.</li>
+      <li><strong>Automation (Finder)</strong> — asked the first time you use Get Info, which
+          DockClick hands to Finder.</li>
     </ul>
 
     <h2>5. Purchasing via Setapp</h2>
@@ -87,7 +101,16 @@
        <a href="https://setapp.com/privacy" target="_blank" rel="noopener">Setapp Privacy Policy</a>.
        Please review the policy carefully. The developer does not receive your payment details.</p>
 
-    <h2>6. Support by email</h2>
+    <h2>6. The Setapp framework in the app</h2>
+    <p>DockClick contains the Setapp framework, which Setapp uses to license the apps it distributes.
+       The framework checks your license and reports usage to Setapp, so a firewall will show DockClick
+       connecting to Setapp’s servers. According to the privacy declaration Setapp ships with the
+       framework, it collects product interaction data (for app functionality and analytics), a device
+       identifier and a user identifier (for app functionality), linked to your Setapp account and not
+       used for tracking. This data is processed in accordance with the
+       <a href="https://setapp.com/privacy" target="_blank" rel="noopener">Setapp Privacy Policy</a>.</p>
+
+    <h2>7. Support by email</h2>
     <p>If you contact <a href="mailto:max@marquart.dev">max@marquart.dev</a>, the developer processes
        your email address, name (if provided), and the content of your message solely to answer your
        request. Legal basis: Art. 6(1)(b) GDPR where your request relates to your license, otherwise
@@ -95,7 +118,7 @@
        deleted once the request is resolved, unless statutory retention obligations require longer
        storage.</p>
 
-    <h2>7. This website</h2>
+    <h2>8. This website</h2>
     <p>This site is hosted on GitHub Pages (GitHub, Inc., USA). When you visit it, GitHub
        automatically processes technical server-log data such as your IP address, browser type, and
        time of access to deliver the site securely, as described in the
@@ -104,34 +127,35 @@
        interest in providing this website securely and efficiently (Art. 6(1)(f) GDPR). This site
        itself sets no cookies, runs no analytics, and embeds no third-party trackers.</p>
 
-    <h2>8. Data sharing</h2>
-    <p>The developer does not sell, rent, or share any personal data. No data is transferred to
-       third parties by the developer, because the developer does not collect any.</p>
+    <h2>9. Data sharing</h2>
+    <p>The developer does not sell, rent, or share personal data. What the Setapp framework reports
+       goes to Setapp, as described in section 6.</p>
 
-    <h2>9. Data retention</h2>
-    <p>The app stores no data outside your device. Support emails are retained only as long as
-       needed to handle your request (see section 6). Server logs of this website are retained by
-       GitHub under its own policy.</p>
+    <h2>10. Data retention</h2>
+    <p>Apart from what the Setapp framework reports to Setapp, the app stores data only on your device
+       (settings and the diagnostic log). Support emails are retained only as long as needed to handle
+       your request (see section 7). Server logs of this website are retained by GitHub under its own
+       policy.</p>
 
-    <h2>10. Your rights</h2>
+    <h2>11. Your rights</h2>
     <p>Under the GDPR you have the right to access (Art. 15), rectification (Art. 16), erasure
        (Art. 17), restriction of processing (Art. 18), data portability (Art. 20), and objection to
        processing based on legitimate interests (Art. 21). You also have the right to lodge a
        complaint with a data protection supervisory authority (Art. 77 GDPR). To exercise your
        rights, contact <a href="mailto:max@marquart.dev">max@marquart.dev</a>. Note that for app
-       usage, there is usually nothing to disclose or delete on our side, as all data stays on your
-       device; for purchase data, please contact Setapp/MacPaw as the responsible controller.</p>
+       usage there is usually nothing to disclose or delete on the developer’s side, as the developer
+       receives no app data; for purchase, license and usage data processed by Setapp, please contact
+       Setapp.</p>
 
-    <h2>11. Children</h2>
-    <p>DockClick is not directed at children and, as described above, collects no personal data
-       from anyone.</p>
+    <h2>12. Children</h2>
+    <p>DockClick is not directed at children.</p>
 
-    <h2>12. Changes to this policy</h2>
+    <h2>13. Changes to this policy</h2>
     <p>If the app’s data practices ever change (for example, if a future update introduces optional
        crash reporting), this policy will be updated before such a change takes effect, and the date
        above will reflect the revision.</p>
 
-    <h2>13. Contact</h2>
+    <h2>14. Contact</h2>
     <p>Questions about privacy? Email <a href="mailto:max@marquart.dev">max@marquart.dev</a> or reach
        the developer via <a href="https://marquart.dev" target="_blank" rel="noopener">marquart.dev</a>.</p>
 
