@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy — DockClick</title>
-  <meta name="description" content="DockClick privacy policy: what data the app processes (all locally, on-device), legal bases under the GDPR, your rights, and how purchasing via Setapp is handled." />
+  <meta name="description" content="DockClick privacy policy: what the app processes on your Mac, what the included Setapp framework reports to Setapp, legal bases under the GDPR, and your rights." />
   <link rel="icon" href="icon.png" />
   <link rel="canonical" href="https://mr-mandelbrot.github.io/DockIntercept/privacy.html" />
   <style>
@@ -88,10 +88,13 @@
           clicked item’s name and path, handling clicks while a DockClick menu is open, and closing
           the Stack after an action. Used only locally. You grant this permission in System Settings
           and can revoke it there at any time.</li>
-      <li><strong>Files and Folders</strong> — macOS may ask once for access to folders such as
-          Downloads, Desktop or Documents the first time you right-click a file there.</li>
-      <li><strong>Automation (Finder)</strong> — asked the first time you use Get Info, which
-          DockClick hands to Finder.</li>
+      <li><strong>Files and Folders</strong> — macOS asks once for access to Downloads during
+          setup, because it is the folder DockClick searches by default, and for other folders such as
+          Desktop or Documents the first time you right-click a file there or add the folder in
+          Settings.</li>
+      <li><strong>Automation (Finder)</strong> — asked shortly after your first DockClick menu
+          closes, as long as Get Info is in the menu. Get Info is handed to Finder, and DockClick
+          sends Finder one harmless request after a menu closes so that Get Info opens quickly.</li>
     </ul>
 
     <h2>5. Purchasing via Setapp</h2>
