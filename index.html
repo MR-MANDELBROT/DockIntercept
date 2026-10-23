@@ -14,13 +14,15 @@
   <meta property="og:title" content="DockClick: The Dock, supercharged." />
   <meta property="og:description" content="A real right-click menu for every file, folder, and Stack in your macOS Dock. Open with, AirDrop, Copy Path, Move to Trash — without ever opening Finder." />
   <meta property="og:url" content="https://mr-mandelbrot.github.io/DockIntercept/" />
-  <meta property="og:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg" />
+  <meta property="og:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <!-- Twitter card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="DockClick: The Dock, supercharged." />
   <meta name="twitter:description" content="A real right-click menu for every file, folder, and Stack in your macOS Dock — Open with, AirDrop, Copy Path, Move to Trash." />
-  <meta name="twitter:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/hero.jpg" />
+  <meta name="twitter:image" content="https://mr-mandelbrot.github.io/DockIntercept/assets/og.jpg" />
 
   <!-- Structured data: tells search engines this is a macOS app sold via Setapp -->
   <script type="application/ld+json">
@@ -254,11 +256,11 @@
     .demo-frame {
       position: relative;
       /* explicit width, so the box does not wait for the poster to get its size */
-      width: min(960px, 100%, 64vh * 1692 / 1204);
-      width: min(960px, 100%, 64svh * 1692 / 1204);
+      width: min(960px, 100%, 64vh * 16 / 10);
+      width: min(960px, 100%, 64svh * 16 / 10);
       max-height: 64vh;
       max-height: 64svh;
-      aspect-ratio: 1692 / 1204;
+      aspect-ratio: 16 / 10;
       max-width: min(960px, 100%);
     }
     .demo-frame video,
@@ -562,7 +564,7 @@
           <p class="hero-meta reveal">Sold on Setapp as a one-time purchase. No ads.</p>
         </div>
         <div class="hero-shot reveal">
-          <img src="assets/hero.jpg" alt="DockClick context menu open over a Dock item, showing Open with, AirDrop, Copy Path and Move to Trash" width="1600" height="1138" />
+          <img src="assets/hero.jpg" alt="DockClick context menu open over a file in a Dock Stack, with Open, Open With, Get Info, Show in Finder, Rename, Compress, AirDrop, Copy, Copy as Pathname and Move to Trash" width="1600" height="1000" />
         </div>
       </div>
     </div>
@@ -591,11 +593,11 @@
       </div>
 
       <div class="demo-captions" id="demo-captions" aria-live="polite">
-        <p data-from="0"    data-to="0.20"><strong>Right-click</strong> any file in your Dock.</p>
-        <p data-from="0.20" data-to="0.46">Open it with <strong>any app</strong>. No Finder detour.</p>
-        <p data-from="0.46" data-to="0.60"><strong>AirDrop</strong> it to a nearby device.</p>
-        <p data-from="0.60" data-to="0.82">Works inside <strong>Stacks</strong>. Jump straight to Finder.</p>
-        <p data-from="0.82" data-to="1.01"><strong>Copy the path.</strong> Or trash it. Done.</p>
+        <p data-from="0"     data-to="0.203"><strong>Right-click</strong> any file in your Dock.</p>
+        <p data-from="0.203" data-to="0.278">Open it with <strong>any app</strong>. No Finder detour.</p>
+        <p data-from="0.278" data-to="0.488"><strong>Rename</strong> it right where it is.</p>
+        <p data-from="0.488" data-to="0.719"><strong>Compress</strong> a folder in one click.</p>
+        <p data-from="0.719" data-to="1.01"><strong>Trash</strong> what you don't need. Done.</p>
       </div>
 
       <div class="demo-progress" aria-hidden="true"><i id="demo-bar"></i></div>
